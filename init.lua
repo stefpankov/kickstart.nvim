@@ -80,6 +80,16 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
+  {
+    'rose-pine/neovim', name = 'rose-pine',
+    lazy = false,
+    config = function()
+      require('rose-pine').setup {
+        dark_variant = "moon"
+      }
+    end
+  },
+
   -- [[ Movement ]]
   {
     "folke/flash.nvim",
@@ -164,6 +174,10 @@ require('lazy').setup({
       -- Adds a number of user-friendly snippets
       -- 'rafamadriz/friendly-snippets',
     },
+  },
+
+  {
+    'rcarriga/nvim-notify'
   },
 
   -- Useful plugin to show you pending keybinds.
@@ -271,16 +285,6 @@ require('lazy').setup({
   --   end,
   -- },
 
-  {
-    'rose-pine/neovim', name = 'rose-pine',
-    lazy = false,
-    config = function()
-      require('rose-pine').setup {
-        dark_variant = "moon"
-      }
-    end
-  },
-
   -- mini.nvim
   -- a set of very useful plugins
   { 'echasnovski/mini.nvim', version = nil },
@@ -306,9 +310,12 @@ require('lazy').setup({
       options = {
         icons_enabled = true,
         theme = 'auto',
-        component_separators = '|',
-        section_separators = '',
+        component_separators = { left = '', right = ''},
+        section_separators = { left = '', right = ''},
       },
+      extensions = {
+        'trouble'
+      }
     },
   },
 
@@ -381,7 +388,7 @@ require('lazy').setup({
   --    Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {})
 
 -- [[ Setting options ]]
@@ -393,6 +400,7 @@ vim.o.hlsearch = false
 
 -- Make line numbers default
 vim.wo.number = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -426,6 +434,8 @@ vim.o.completeopt = 'menuone,noselect'
 vim.o.termguicolors = true
 
 vim.cmd("colorscheme rose-pine")
+
+require('notify').setup()
 
 -- [[ Basic Keymaps ]]
 
@@ -487,6 +497,11 @@ require('telescope').setup {
         ['<C-u>'] = false,
         ['<C-d>'] = false,
       },
+    },
+  },
+  pickers = {
+    find_files = {
+      hidden = true
     },
   },
 }
@@ -578,7 +593,7 @@ vim.defer_fn(function()
       'vimdoc',
       'vim',
       'bash',
-      'php'
+      'php',
     },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
@@ -672,9 +687,9 @@ local on_attach = function(_, bufnr)
   nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-  nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-  nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+  nmap('<leader>ltd', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+  nmap('<leader>lds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+  nmap('<leader>lws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
@@ -715,14 +730,15 @@ require('which-key').register {
   ['<leader>bf'] = { name = '[B]uffer [F]ind', _ = 'which_key_ignore' },
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]xplorer', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  ['<leader>d'] = { name = '[D]ebug', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+  ['<leader>l'] = { name = '[L]SP', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
   ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-  ['<leader>x'] = { name = 'Fi[X] these errors', _ = 'which_key_ignore' },
+  ['<leader>x'] = { name = 'Fi[X] Me (Trouble)', _ = 'which_key_ignore' },
 }
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
@@ -864,6 +880,8 @@ require('mini.basics').setup({
     win_borders = 'bold',
   }
 })
+require('mini.cursorword').setup()
+require('mini.pairs').setup()
 
 local starter = require('mini.starter')
 starter.setup({
