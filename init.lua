@@ -1,41 +1,12 @@
 --[[
 
 =====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
+=========================== Neovim Rules ============================
 =====================================================================
 
-Kickstart.nvim is *not* a distribution.
+ NOTE: https://neovim.io/doc/user/lua-guide.html
+Lists useful functions and options that helps with controlling Neovim from Lua
 
-Kickstart.nvim is a template for your own configuration.
-  The goal is that you can read every line of code, top-to-bottom, understand
-  what your configuration is doing, and modify it to suit your needs.
-
-  Once you've done that, you should start exploring, configuring and tinkering to
-  explore Neovim!
-
-  If you don't know anything about Lua, I recommend taking some time to read through
-  a guide. One possible example:
-  - https://learnxinyminutes.com/docs/lua/
-
-
-  And then you can explore or search through `:help lua-guide`
-  - https://neovim.io/doc/user/lua-guide.html
-
-
-Kickstart Guide:
-
-I have left several `:help X` comments throughout the init.lua
-You should run that command and read that help section for more information.
-
-In addition, I have some `NOTE:` items throughout the file.
-These are for you, the reader to help understand what is happening. Feel free to delete
-them once you know what you're doing, but they should serve as a guide for when you
-are first encountering a few different constructs in your nvim config.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now :)
 --]]
 
 -- Set <space> as the leader key
@@ -43,6 +14,63 @@ P.S. You can delete this when you're done too. It's your config now :)
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+
+-- Set to true if you have a Nerd Font installed
+vim.g.have_nerd_font = true
+
+-- [[ Setting options ]]
+-- See `:help vim.o`
+-- NOTE: You can change these options as you wish!
+
+-- Set highlight on search
+vim.o.hlsearch = false
+
+-- Make line numbers default
+vim.wo.number = true
+vim.o.relativenumber = true
+
+-- Enable mouse mode
+vim.o.mouse = 'a'
+
+-- Don't show the mode, since it's already in status line
+vim.opt.showmode = false
+
+-- Sync clipboard between OS and Neovim.
+--  Remove this option if you want your OS clipboard to remain independent.
+--  See `:help 'clipboard'`
+vim.o.clipboard = 'unnamedplus'
+
+-- Enable break indent
+vim.o.breakindent = true
+
+-- Save undo history
+vim.o.undofile = true
+
+-- Case-insensitive searching UNLESS \C or capital in search
+vim.o.ignorecase = true
+vim.o.smartcase = true
+
+-- Keep signcolumn on by default
+vim.wo.signcolumn = 'yes'
+
+-- Decrease update time
+vim.o.updatetime = 250
+vim.o.timeoutlen = 300
+
+-- Set completeopt to have a better completion experience
+vim.o.completeopt = 'menuone,noselect'
+
+-- Sets how neovim will display certain whitespace in the editor.
+--  See `:help 'list'`
+--  and `:help 'listchars'`
+vim.opt.list = true
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+
+-- Preview substitutions live, as you type!
+vim.opt.inccommand = 'split'
+
+-- NOTE: You should make sure your terminal supports this
+vim.o.termguicolors = true
 
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
@@ -78,11 +106,17 @@ require('lazy').setup({
   'tpope/vim-rhubarb',
 
   -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth',
+  {
+    'tpope/vim-sleuth',
+    lazy = false,
+    priority = 1000,
+  },
 
   {
-    'rose-pine/neovim', name = 'rose-pine',
+    'rose-pine/neovim',
+    name = 'rose-pine',
     lazy = false,
+    priority = 1000,
     config = function()
       require('rose-pine').setup {
         dark_variant = "moon"
@@ -98,10 +132,10 @@ require('lazy').setup({
     opts = {},
     -- stylua: ignore
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
+      { "r", mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
+      { "R", mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
     },
   },
 
@@ -117,7 +151,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -128,7 +162,10 @@ require('lazy').setup({
   {
     "pmizio/typescript-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-    opts = {},
+    ft = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
+    opts = {
+      on_attach = require('utils').on_attach
+    },
   },
 
   -- Rust
@@ -142,11 +179,13 @@ require('lazy').setup({
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
-     -- your configuration comes here
-     -- or leave it empty to use the default settings
-     -- refer to the configuration section below
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
     },
   },
+
+  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   {
     -- Autocompletion
@@ -177,17 +216,20 @@ require('lazy').setup({
   },
 
   {
-    'rcarriga/nvim-notify'
+    'rcarriga/nvim-notify',
+    config = function()
+      vim.notify = require("notify")
+    end
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',     opts = {} },
 
   {
     "NeogitOrg/neogit",
     dependencies = {
-      "nvim-lua/plenary.nvim",         -- required
-      "sindrets/diffview.nvim",        -- optional - Diff integration
+      "nvim-lua/plenary.nvim",  -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
 
       -- Only one of these is needed, not both.
       "nvim-telescope/telescope.nvim", -- optional
@@ -287,7 +329,48 @@ require('lazy').setup({
 
   -- mini.nvim
   -- a set of very useful plugins
-  { 'echasnovski/mini.nvim', version = nil },
+  {
+    'echasnovski/mini.nvim',
+    version = nil,
+    config = function()
+      -- mini.nvim modules
+      require('mini.trailspace').setup()
+      require('mini.jump').setup()
+      require('mini.basics').setup({
+        options = {
+          --[[ basic = true, ]]
+          extra_ui = true,
+          win_borders = 'bold',
+        }
+      })
+      require('mini.cursorword').setup()
+      require('mini.pairs').setup()
+
+      local starter = require('mini.starter')
+      local resession_items = function()
+        local items = {}
+        local sessions = require('resession').list()
+        for k, session in pairs(sessions) do
+          items[k] = {
+            name = session,
+            action = require('resession').load(session),
+            section = 'Sessions'
+          }
+        end
+        return items
+      end
+      starter.setup({
+        items = {
+          starter.sections.telescope(),
+          starter.sections.recent_files(),
+        },
+        content_hooks = {
+          starter.gen_hook.adding_bullet(),
+          starter.gen_hook.aligning('center', 'center'),
+        },
+      })
+    end
+  },
 
   -- nvim-tree
   {
@@ -303,29 +386,12 @@ require('lazy').setup({
   },
 
   {
-    -- Set lualine as statusline
-    'nvim-lualine/lualine.nvim',
-    -- See `:help lualine.txt`
-    opts = {
-      options = {
-        icons_enabled = true,
-        theme = 'auto',
-        component_separators = { left = '', right = ''},
-        section_separators = { left = '', right = ''},
-      },
-      extensions = {
-        'trouble'
-      }
-    },
-  },
-
-  {
     -- Set cokeline as bufferline
     "willothy/nvim-cokeline",
     dependencies = {
-      "nvim-lua/plenary.nvim",        -- Required for v0.4.0+
+      "nvim-lua/plenary.nvim",       -- Required for v0.4.0+
       "nvim-tree/nvim-web-devicons", -- If you want devicons
-      "stevearc/resession.nvim"       -- Optional, for persistent history
+      "stevearc/resession.nvim"      -- Optional, for persistent history
     },
     config = true
   },
@@ -391,48 +457,6 @@ require('lazy').setup({
   { import = 'custom.plugins' },
 }, {})
 
--- [[ Setting options ]]
--- See `:help vim.o`
--- NOTE: You can change these options as you wish!
-
--- Set highlight on search
-vim.o.hlsearch = false
-
--- Make line numbers default
-vim.wo.number = true
-vim.o.relativenumber = true
-
--- Enable mouse mode
-vim.o.mouse = 'a'
-
--- Sync clipboard between OS and Neovim.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.o.clipboard = 'unnamedplus'
-
--- Enable break indent
-vim.o.breakindent = true
-
--- Save undo history
-vim.o.undofile = true
-
--- Case-insensitive searching UNLESS \C or capital in search
-vim.o.ignorecase = true
-vim.o.smartcase = true
-
--- Keep signcolumn on by default
-vim.wo.signcolumn = 'yes'
-
--- Decrease update time
-vim.o.updatetime = 250
-vim.o.timeoutlen = 300
-
--- Set completeopt to have a better completion experience
-vim.o.completeopt = 'menuone,noselect'
-
--- NOTE: You should make sure your terminal supports this
-vim.o.termguicolors = true
-
 vim.cmd("colorscheme rose-pine")
 
 require('notify').setup()
@@ -451,8 +475,7 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+vim.keymap.set('n', '<leader>xh', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 
 
 -- Navigation keymaps
@@ -461,8 +484,8 @@ vim.keymap.set('n', '<S-l>', '<cmd>bnext<cr>', { desc = 'Go to next buffer' })
 
 -- Buffer commands
 vim.keymap.set("n", "<leader>bd", "<cmd>Bdelete<cr>", { desc = 'Delete current buffer' })
-vim.keymap.set("n", "<leader>bp",function()
-    require('cokeline.mappings').pick("focus")
+vim.keymap.set("n", "<leader>bp", function()
+  require('cokeline.mappings').pick("focus")
 end, { desc = "Pick a buffer to focus" })
 
 -- Move to window using the <ctrl> hjkl keys
@@ -711,8 +734,10 @@ end
 
 -- Trouble diagnostics, quickfix and loclist keymaps
 vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end, { desc = "Open Trouble window" })
-vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end, { desc = "Open workspace diagnostics" })
-vim.keymap.set("n", "<leader>xd", function() require("trouble").toggle("document_diagnostics") end, { desc = "Open document diagnostics" })
+vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end,
+  { desc = "Open workspace diagnostics" })
+vim.keymap.set("n", "<leader>xd", function() require("trouble").toggle("document_diagnostics") end,
+  { desc = "Open document diagnostics" })
 vim.keymap.set("n", "<leader>xq", function() require("trouble").toggle("quickfix") end, { desc = "Open quickfix" })
 vim.keymap.set("n", "<leader>xl", function() require("trouble").toggle("loclist") end, { desc = "Open loclist" })
 vim.keymap.set("n", "gR", function() require("trouble").toggle("lsp_references") end, { desc = "Open LSP references" })
@@ -734,6 +759,9 @@ require('which-key').register {
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
   ['<leader>l'] = { name = '[L]SP', _ = 'which_key_ignore' },
+  ['<leader>ld'] = { name = '[L]SP [D]ocument', _ = 'which_key_ignore' },
+  ['<leader>lt'] = { name = '[L]SP [T]ype', _ = 'which_key_ignore' },
+  ['<leader>lw'] = { name = '[L]SP [W]orkspace', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
   ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
@@ -763,7 +791,7 @@ require('mason-lspconfig').setup()
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  -- pyright = {},
+  pyright = {},
   -- rust_analyzer = {},
   tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
@@ -775,6 +803,10 @@ local servers = {
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
       -- diagnostics = { disable = { 'missing-fields' } },
     },
+  },
+
+  phpactor = {
+    filetypes = { 'php' },
   },
 }
 
@@ -814,9 +846,9 @@ mason_lspconfig.setup_handlers {
   end,
 }
 
-require('typescript-tools').setup({
-  on_attach = on_attach
-})
+-- require('typescript-tools').setup({
+--   on_attach = on_attach
+-- })
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
@@ -869,30 +901,6 @@ cmp.setup {
     { name = 'path' },
   },
 }
-
--- mini.nvim modules
-require('mini.trailspace').setup()
-require('mini.jump').setup()
-require('mini.basics').setup({
-  options = {
-    --[[ basic = true, ]]
-    extra_ui = true,
-    win_borders = 'bold',
-  }
-})
-require('mini.cursorword').setup()
-require('mini.pairs').setup()
-
-local starter = require('mini.starter')
-starter.setup({
-  items = {
-    starter.sections.telescope(),
-  },
-  content_hooks = {
-    starter.gen_hook.adding_bullet(),
-    starter.gen_hook.aligning('center', 'center'),
-  },
-})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
