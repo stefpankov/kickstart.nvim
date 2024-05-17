@@ -20,8 +20,11 @@ return {
           lualine_x = {
             tabwidth,
             'encoding',
+          },
+          lualine_y = {
             'fileformat',
-            'filetype'
+            'filetype',
+            'progress',
           },
         },
         extensions = {

@@ -32,6 +32,10 @@ return {
           javascriptreact = { { "prettierd", "prettier" } },
           typescript = { { "prettierd", "prettier" } },
           typescriptreact = { { "prettierd", "prettier" } },
+
+          gleam = { "gleam" },
+
+          elixir = { "mix format" },
         },
       })
 

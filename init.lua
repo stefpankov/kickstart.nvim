@@ -132,10 +132,10 @@ require('lazy').setup({
     opts = {},
     -- stylua: ignore
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
-      { "r", mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
-      { "R", mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "<leader>fs", mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "[F]lash [S]earch" },
+      { "<leader>ft", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "[F]lash [T]reesitter" },
+      { "<leader>fr", mode = "o",               function() require("flash").remote() end,            desc = "[F]lash [R]emote" },
+      { "<leader>ft", mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "[F]lash [R]emote Treesitter" },
     },
   },
 
@@ -172,7 +172,57 @@ require('lazy').setup({
   {
     'mrcjkb/rustaceanvim',
     version = '^4', -- Recommended
+    event = { "BufReadPre", "BufNewFile" },
     ft = { 'rust' },
+  },
+
+  {
+    "elixir-tools/elixir-tools.nvim",
+    version = "*",
+    event = { "BufReadPre", "BufNewFile" },
+    ft = { 'elixir' },
+    config = function()
+      local elixir = require("elixir")
+      local elixirls = require("elixir.elixirls")
+
+      elixir.setup {
+        nextls = {
+          enable = false,
+          on_attach = require('utils').on_attach,
+          init_options = {
+            mix_env = "dev",
+            mix_target = "host",
+            experimental = {
+              completions = {
+                enable = true -- control if completions are enabled. defaults to false
+              }
+            }
+          },
+        },
+        credo = {},
+        elixirls = {
+          enable = true,
+          settings = elixirls.settings {
+            dialyzerEnabled = true,
+            enableTestLenses = false,
+          },
+          on_attach = function(client, bufnr)
+            require('utils').on_attach(client, bufnr)
+            vim.keymap.set("n", "<leader>cefp", ":ElixirFromPipe<cr>",
+              { buffer = true, noremap = true, desc = "[C]ode [E]lixir [F]rom [P]ipe" })
+            vim.keymap.set("n", "<leader>cetp", ":ElixirToPipe<cr>",
+              { buffer = true, noremap = true, desc = "[C]ode [E]lixir [T]o [P]ipe" })
+            vim.keymap.set("v", "<leader>ceem", ":ElixirExpandMacro<cr>",
+              { buffer = true, noremap = true, desc = "[C]ode [E]lixir [E]xpand [M]acro" })
+            vim.keymap.set("n", "<leader>lcr", function() vim.lsp.codelens.run() end,
+              { buffer = true, noremap = true, desc = "[L]SP [C]odelens [R]un" })
+          end,
+        }
+      }
+    end,
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
   },
 
   {
@@ -345,23 +395,13 @@ require('lazy').setup({
       })
       require('mini.cursorword').setup()
       require('mini.pairs').setup()
+      require('mini.sessions').setup()
 
       local starter = require('mini.starter')
-      local resession_items = function()
-        local items = {}
-        local sessions = require('resession').list()
-        for k, session in pairs(sessions) do
-          items[k] = {
-            name = session,
-            action = require('resession').load(session),
-            section = 'Sessions'
-          }
-        end
-        return items
-      end
       starter.setup({
         items = {
           starter.sections.telescope(),
+          starter.sections.sessions(),
           starter.sections.recent_files(),
         },
         content_hooks = {
@@ -455,7 +495,15 @@ require('lazy').setup({
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   { import = 'custom.plugins' },
-}, {})
+}, {
+  dev = {
+    ---@type string | fun(plugin: LazyPlugin): string directory where you store your local plugin projects
+    path = "~/Personal Projects",
+    ---@type string[] plugins that match these patterns will use your local versions instead of being fetched from GitHub
+    patterns = { "stefpankov" }, -- For example {"folke"}
+    fallback = true,             -- Fallback to git when local plugin doesn't exist
+  },
+})
 
 vim.cmd("colorscheme rose-pine")
 
@@ -522,11 +570,6 @@ require('telescope').setup {
       },
     },
   },
-  pickers = {
-    find_files = {
-      hidden = true
-    },
-  },
 }
 
 -- Enable telescope fzf native, if installed
@@ -589,7 +632,7 @@ vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]e
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<D-p>', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<D-p>', require('telescope.builtin').git_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -617,6 +660,8 @@ vim.defer_fn(function()
       'vim',
       'bash',
       'php',
+      'gleam',
+      'elixir',
     },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
@@ -755,6 +800,7 @@ require('which-key').register {
   ['<leader>bf'] = { name = '[B]uffer [F]ind', _ = 'which_key_ignore' },
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]xplorer', _ = 'which_key_ignore' },
+  ['<leader>f'] = { name = '[F]lash', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ebug', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
@@ -791,7 +837,6 @@ require('mason-lspconfig').setup()
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  pyright = {},
   -- rust_analyzer = {},
   tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
@@ -836,6 +881,9 @@ mason_lspconfig.setup_handlers {
     -- rust_analyzer setup is handled by rustacean
     -- we don't want mason_lspconfig to set it up because we'll get two instances of rust_analyzer
     if server_name == 'rust_analyzer' then return end
+
+    if server_name == 'nextls' then return end
+    if server_name == 'elixir-ls' then return end
 
     require('lspconfig')[server_name].setup {
       capabilities = capabilities,
