@@ -8,12 +8,15 @@ return {
       "nvim-treesitter/nvim-treesitter",
       "mrcjkb/rustaceanvim",
       "jfpedroza/neotest-elixir",
+      'V13Axel/neotest-pest',
     },
     config = function()
       require('neotest').setup({
+        log_level = 3,
         adapters = {
           require('rustaceanvim.neotest'),
-          require('neotest-elixir')
+          require('neotest-elixir'),
+          require('neotest-pest'),
         },
       })
 

@@ -139,6 +139,19 @@ require('lazy').setup({
     },
   },
 
+  {
+    "folke/lazydev.nvim",
+    ft = "lua", -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = "luvit-meta/library", words = { "vim%.uv" } },
+      },
+    },
+  },
+  { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
+
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -154,7 +167,7 @@ require('lazy').setup({
       { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
-      'folke/neodev.nvim',
+      -- 'folke/neodev.nvim',
     },
   },
 
@@ -227,11 +240,47 @@ require('lazy').setup({
 
   {
     "folke/trouble.nvim",
+    cmd = "Trouble",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
       -- your configuration comes here
       -- or leave it empty to use the default settings
       -- refer to the configuration section below
+      symbols = {
+        win = { position = "left" }
+      }
+    },
+    keys = {
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "<leader>xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
     },
   },
 
@@ -277,6 +326,7 @@ require('lazy').setup({
 
   {
     "NeogitOrg/neogit",
+    event = { "VeryLazy" },
     dependencies = {
       "nvim-lua/plenary.nvim",  -- required
       "sindrets/diffview.nvim", -- optional - Diff integration
@@ -397,33 +447,68 @@ require('lazy').setup({
       require('mini.pairs').setup()
       require('mini.sessions').setup()
 
+      require('mini.files').setup({
+        windows = {
+          preview = true,
+        },
+      })
+      vim.keymap.set("n", "<leader>e", function()
+        MiniFiles.open()
+      end, { desc = "Toggle explorer" })
+      vim.keymap.set("n", "<leader>bef", function()
+        local path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+
+        MiniFiles.open(MiniFiles.open(path))
+      end, { desc = "Toggle explorer" })
+
+      require('mini.visits').setup()
+
       local starter = require('mini.starter')
       starter.setup({
         items = {
           starter.sections.telescope(),
           starter.sections.sessions(),
-          starter.sections.recent_files(),
+          starter.sections.builtin_actions(),
         },
         content_hooks = {
           starter.gen_hook.adding_bullet(),
           starter.gen_hook.aligning('center', 'center'),
         },
       })
+
+      local make_select_path = function(select_global, recency_weight)
+        local visits = require('mini.visits')
+        local sort = visits.gen_sort.default({ recency_weight = recency_weight })
+        local select_opts = { sort = sort }
+        return function()
+          local cwd = select_global and '' or vim.fn.getcwd()
+          visits.select_path(cwd, select_opts)
+        end
+      end
+
+      local map = function(lhs, desc, ...)
+        vim.keymap.set('n', lhs, make_select_path(...), { desc = desc })
+      end
+
+      -- Adjust LHS and description to your liking
+      map('<Leader>vr', '[V]isit recent (cwd)', true, 1)
+      map('<Leader>vy', '[V]isit frecent (cwd)', false, 0.5)
+      map('<Leader>vf', '[V]isit frequent (cwd)', false, 0)
     end
   },
 
   -- nvim-tree
-  {
-    "nvim-tree/nvim-tree.lua",
-    version = "*",
-    lazy = false,
-    dependencies = {
-      "nvim-tree/nvim-web-devicons",
-    },
-    config = function()
-      require("nvim-tree").setup {}
-    end,
-  },
+  -- {
+  --   "nvim-tree/nvim-tree.lua",
+  --   version = "*",
+  --   lazy = false,
+  --   dependencies = {
+  --     "nvim-tree/nvim-web-devicons",
+  --   },
+  --   config = function()
+  --     require("nvim-tree").setup {}
+  --   end,
+  -- },
 
   {
     -- Set cokeline as bufferline
@@ -450,6 +535,7 @@ require('lazy').setup({
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
+  --
   -- Fuzzy Finder (files, lsp, etc)
   {
     'nvim-telescope/telescope.nvim',
@@ -469,6 +555,11 @@ require('lazy').setup({
         end,
       },
     },
+  },
+
+  {
+    "nvim-telescope/telescope-file-browser.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
   },
 
   { 'nvim-pack/nvim-spectre', opts = {} },
@@ -561,6 +652,24 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
+-- Telescope is a fuzzy finder that comes with a lot of different things that
+-- it can fuzzy find! It's more than just a "file finder", it can search
+-- many different aspects of Neovim, your workspace, LSP, and more!
+--
+-- The easiest way to use Telescope, is to start by doing something like:
+--  :Telescope help_tags
+--
+-- After running this command, a window will open up and you're able to
+-- type in the prompt window. You'll see a list of `help_tags` options and
+-- a corresponding preview of the help.
+--
+-- Two important keymaps to use while in Telescope are:
+--  - Insert mode: <c-/>
+--  - Normal mode: ?
+--
+-- This opens a window that shows you all of the keymaps for the current
+-- Telescope picker. This is really useful to discover what Telescope can
+-- do as well as how to actually do it!
 require('telescope').setup {
   defaults = {
     mappings = {
@@ -570,10 +679,23 @@ require('telescope').setup {
       },
     },
   },
+  pickers = {
+    find_files = {
+      theme = "dropdown",
+      hidden = true,
+    }
+  },
+  extensions = {
+    ['ui-select'] = {
+      require('telescope.themes').get_dropdown(),
+    },
+  },
 }
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
+pcall(require('telescope').load_extension, 'ui-select')
+pcall(require('telescope').load_extension, 'file_browser')
 
 -- Telescope live_grep in git root
 -- Function to find the git root directory based on the current buffer's path
@@ -632,7 +754,7 @@ vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]e
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<D-p>', require('telescope.builtin').git_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<D-p>', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -648,6 +770,7 @@ vim.defer_fn(function()
     -- Add languages to be installed here that you want installed for treesitter
     ensure_installed = {
       'c',
+      'diff',
       'cpp',
       'go',
       'lua',
@@ -662,6 +785,7 @@ vim.defer_fn(function()
       'php',
       'gleam',
       'elixir',
+      'yaml',
     },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
@@ -777,19 +901,9 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 end
 
--- Trouble diagnostics, quickfix and loclist keymaps
-vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end, { desc = "Open Trouble window" })
-vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end,
-  { desc = "Open workspace diagnostics" })
-vim.keymap.set("n", "<leader>xd", function() require("trouble").toggle("document_diagnostics") end,
-  { desc = "Open document diagnostics" })
-vim.keymap.set("n", "<leader>xq", function() require("trouble").toggle("quickfix") end, { desc = "Open quickfix" })
-vim.keymap.set("n", "<leader>xl", function() require("trouble").toggle("loclist") end, { desc = "Open loclist" })
-vim.keymap.set("n", "gR", function() require("trouble").toggle("lsp_references") end, { desc = "Open LSP references" })
-
 -- Explorer - Nvim tree
-vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle explorer" })
-vim.keymap.set("n", "<leader>bfe", "<cmd>NvimTreeFindFile<CR>", { desc = "Find the current file in Nvim Tree" })
+-- vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle explorer" })
+-- vim.keymap.set("n", "<leader>bfe", "<cmd>NvimTreeFindFile<CR>", { desc = "Find the current file in Nvim Tree" })
 
 -- Git
 vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<cr>", { desc = "Open Neogit" })
@@ -811,6 +925,7 @@ require('which-key').register {
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
   ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+  ['<leader>v'] = { name = '[V]isit', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
   ['<leader>x'] = { name = 'Fi[X] Me (Trouble)', _ = 'which_key_ignore' },
 }
@@ -856,7 +971,7 @@ local servers = {
 }
 
 -- Setup neovim lua configuration
-require('neodev').setup()
+-- require('neodev').setup()
 
 -- Setup rustacean
 vim.g.rustaceanvim = {
