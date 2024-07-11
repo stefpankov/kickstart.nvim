@@ -181,19 +181,10 @@ require('lazy').setup({
     },
   },
 
-  -- Rust
-  {
-    'mrcjkb/rustaceanvim',
-    version = '^4', -- Recommended
-    event = { "BufReadPre", "BufNewFile" },
-    ft = { 'rust' },
-  },
-
+  -- Elixir
   {
     "elixir-tools/elixir-tools.nvim",
     version = "*",
-    event = { "BufReadPre", "BufNewFile" },
-    ft = { 'elixir' },
     config = function()
       local elixir = require("elixir")
       local elixirls = require("elixir.elixirls")
@@ -201,7 +192,9 @@ require('lazy').setup({
       elixir.setup {
         nextls = {
           enable = false,
-          on_attach = require('utils').on_attach,
+          on_attach = function(client, bufnr)
+            require('utils').on_attach(client, bufnr)
+          end,
           init_options = {
             mix_env = "dev",
             mix_target = "host",
@@ -456,10 +449,10 @@ require('lazy').setup({
       })
       require('mini.cursorword').setup()
       require('mini.pairs').setup()
-      require('mini.sessions').setup({
-        autoread = true,
-        autowrite = true,
-      })
+      -- require('mini.sessions').setup({
+      --   autoread = true,
+      --   autowrite = true,
+      -- })
 
       require('mini.files').setup({
         windows = {
@@ -470,9 +463,9 @@ require('lazy').setup({
         MiniFiles.open()
       end, { desc = "Toggle explorer" })
       vim.keymap.set("n", "<leader>bef", function()
-        local path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+        local path = vim.api.nvim_buf_get_name(0)
 
-        MiniFiles.open(MiniFiles.open(path))
+        MiniFiles.open(path)
       end, { desc = "Toggle explorer" })
 
       require('mini.visits').setup()
