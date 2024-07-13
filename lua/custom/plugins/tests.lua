@@ -6,34 +6,45 @@ return {
       "nvim-neotest/nvim-nio",
       -- "antoinemadec/FixCursorHold.nvim",
       "nvim-treesitter/nvim-treesitter",
-      "mrcjkb/rustaceanvim",
+      -- "mrcjkb/rustaceanvim",
       "jfpedroza/neotest-elixir",
       'V13Axel/neotest-pest',
     },
+    keys = {
+      { "<leader>ctn", function() require("neotest").run.run() end, desc = "[C]ode [T]ests Run [N]earest" },
+      {
+        "<leader>ctf",
+        function()
+          require("neotest").run.run(vim.fn.expand("%"))
+        end,
+        desc = "[C]ode [T]ests Run [F]ile"
+      },
+      {
+        "<leader>ctd",
+        function()
+          require("neotest").run.run({ strategy = "dap", suite = false })
+        end,
+        desc = "[C]ode [T]ests [D]ebug Nearest"
+      },
+      {
+        "<leader>cts", function()
+        require("neotest").run.run({ suite = true })
+      end, { desc = "[C]ode [T]ests Run [S]uite" }
+      }
+    },
     config = function()
-      require('neotest').setup({
-        log_level = 3,
+      require("neotest").setup({
         adapters = {
-          require('rustaceanvim.neotest'),
+          -- require('rustaceanvim.neotest'),
           require('neotest-elixir'),
-          require('neotest-pest'),
+          require('neotest-pest')({
+            sail_enabled = function() return true end,
+          }),
         },
       })
 
-      vim.keymap.set("n", "<leader>ctn", function()
-        require("neotest").run.run()
-      end, { desc = "[C]ode [T]ests Run [N]earest" })
-
-      vim.keymap.set("n", "<leader>ctf", function()
-        require("neotest").run.run(vim.fn.expand("%"))
-      end, { desc = "[C]ode [T]ests Run [F]ile" })
-
-      vim.keymap.set("n", "<leader>ctd", function()
-        require("neotest").run.run({ strategy = "dap" })
-      end, { desc = "[C]ode [T]ests [D]ebug Nearest" })
-
-      require("which-key").register({
-        ['<leader>ct'] = { name = '[C]ode [T]ests', _ = 'which_key_ignore' },
+      require("which-key").add({
+        { "<leader>ct", group = "[C]ode [T]ests" },
       })
     end,
   },

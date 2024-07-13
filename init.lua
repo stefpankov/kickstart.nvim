@@ -222,6 +222,38 @@ require('lazy').setup({
               { buffer = true, noremap = true, desc = "[C]ode [E]lixir [E]xpand [M]acro" })
             vim.keymap.set("n", "<leader>lcr", function() vim.lsp.codelens.run() end,
               { buffer = true, noremap = true, desc = "[L]SP [C]odelens [R]un" })
+
+            local dap = require('dap')
+
+            dap.adapters.mix_task = {
+              type = "executable",
+              command =
+              "/Users/stefan/.cache/nvim/elixir-tools.nvim/installs/elixir-lsp/elixir-ls/tags_v0.22.0/1.17.1-26/debug_adapter.sh",
+              args = {}
+            }
+
+            dap.configurations.elixir = {
+              {
+                type = "mix_task",
+                name = "mix test",
+                task = "test",
+                taskArgs = { "--trace" },
+                request = "launch",
+                startApps = true, -- for Phoenix projects
+                projectDir = "${workspaceFolder}",
+                requireFiles = {
+                  "test/**/test_helper.exs",
+                  "test/**/*_test.exs"
+                }
+              },
+              {
+                type = "mix_task",
+                name = "phx.server",
+                request = "launch",
+                task = "phx.server",
+                projectDir = "${workspaceRoot}"
+              }
+            }
           end,
         }
       }
@@ -315,21 +347,27 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
-
   {
-    "NeogitOrg/neogit",
-    event = { "VeryLazy" },
-    dependencies = {
-      "nvim-lua/plenary.nvim",  -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
-
-      -- Only one of these is needed, not both.
-      "nvim-telescope/telescope.nvim", -- optional
-      -- "ibhagwan/fzf-lua",              -- optional
-    },
-    config = true
+    'folke/which-key.nvim',
+    opts = {
+      preset = "modern",
+      delay = 400
+    }
   },
+
+  -- {
+  --   "NeogitOrg/neogit",
+  --   event = { "VeryLazy" },
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",  -- required
+  --     "sindrets/diffview.nvim", -- optional - Diff integration
+  --
+  --     -- Only one of these is needed, not both.
+  --     "nvim-telescope/telescope.nvim", -- optional
+  --     -- "ibhagwan/fzf-lua",              -- optional
+  --   },
+  --   config = true
+  -- },
 
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
@@ -540,7 +578,7 @@ require('lazy').setup({
   },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim',  opts = {} },
+  -- { 'numToStr/Comment.nvim', opts = {} },
 
   --
   -- Fuzzy Finder (files, lsp, etc)
@@ -908,40 +946,52 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 end
 
--- Explorer - Nvim tree
--- vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle explorer" })
--- vim.keymap.set("n", "<leader>bfe", "<cmd>NvimTreeFindFile<CR>", { desc = "Find the current file in Nvim Tree" })
-
--- Git
-vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<cr>", { desc = "Open Neogit" })
-
 -- document existing key chains
-require('which-key').register {
-  ['<leader>b'] = { name = '[B]uffer', _ = 'which_key_ignore' },
-  ['<leader>bf'] = { name = '[B]uffer [F]ind', _ = 'which_key_ignore' },
-  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>e'] = { name = '[E]xplorer', _ = 'which_key_ignore' },
-  ['<leader>f'] = { name = '[F]lash', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ebug', _ = 'which_key_ignore' },
-  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-  ['<leader>l'] = { name = '[L]SP', _ = 'which_key_ignore' },
-  ['<leader>ld'] = { name = '[L]SP [D]ocument', _ = 'which_key_ignore' },
-  ['<leader>lt'] = { name = '[L]SP [T]ype', _ = 'which_key_ignore' },
-  ['<leader>lw'] = { name = '[L]SP [W]orkspace', _ = 'which_key_ignore' },
-  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-  ['<leader>v'] = { name = '[V]isit', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-  ['<leader>x'] = { name = 'Fi[X] Me (Trouble)', _ = 'which_key_ignore' },
-}
+local wk = require('which-key')
+wk.add({
+  { "<leader>b",   group = "[B]uffer" },
+  { "<leader>b_",  hidden = true },
+  { "<leader>bf",  group = "[B]uffer [F]ind" },
+  { "<leader>bf_", hidden = true },
+  { "<leader>c",   group = "[C]ode" },
+  { "<leader>c_",  hidden = true },
+  { "<leader>d",   group = "[D]ebug" },
+  { "<leader>d_",  hidden = true },
+  { "<leader>e",   group = "[E]xplorer" },
+  { "<leader>e_",  hidden = true },
+  { "<leader>f",   group = "[F]lash" },
+  { "<leader>f_",  hidden = true },
+  { "<leader>g",   group = "[G]it" },
+  { "<leader>g_",  hidden = true },
+  { "<leader>h",   group = "Git [H]unk" },
+  { "<leader>h_",  hidden = true },
+  { "<leader>l",   group = "[L]SP" },
+  { "<leader>l_",  hidden = true },
+  { "<leader>ld",  group = "[L]SP [D]ocument" },
+  { "<leader>ld_", hidden = true },
+  { "<leader>lt",  group = "[L]SP [T]ype" },
+  { "<leader>lt_", hidden = true },
+  { "<leader>lw",  group = "[L]SP [W]orkspace" },
+  { "<leader>lw_", hidden = true },
+  { "<leader>r",   group = "[R]ename" },
+  { "<leader>r_",  hidden = true },
+  { "<leader>s",   group = "[S]earch" },
+  { "<leader>s_",  hidden = true },
+  { "<leader>t",   group = "[T]oggle" },
+  { "<leader>t_",  hidden = true },
+  { "<leader>v",   group = "[V]isit" },
+  { "<leader>v_",  hidden = true },
+  { "<leader>w",   group = "[W]orkspace" },
+  { "<leader>w_",  hidden = true },
+  { "<leader>x",   group = "Fi[X] Me (Trouble)" },
+  { "<leader>x_",  hidden = true },
+})
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
-require('which-key').register({
-  ['<leader>'] = { name = 'VISUAL <leader>' },
-  ['<leader>h'] = { 'Git [H]unk' },
-}, { mode = 'v' })
+wk.add({
+  { "<leader>",  group = "VISUAL <leader>", mode = "v" },
+  { "<leader>h", desc = "Git [H]unk",       mode = "v" },
+})
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
