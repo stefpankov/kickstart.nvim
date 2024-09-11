@@ -64,7 +64,7 @@ vim.o.completeopt = 'menuone,noselect'
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = { tab = '▏ ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -172,13 +172,26 @@ require('lazy').setup({
   },
 
   -- TypeScript
+  -- {
+  --   "pmizio/typescript-tools.nvim",
+  --   dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+  --   ft = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
+  --   opts = {
+  --     on_attach = require('utils').on_attach
+  --   },
+  -- },
+
+  -- TailwindCSS
   {
-    "pmizio/typescript-tools.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-    ft = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
-    opts = {
-      on_attach = require('utils').on_attach
+    "luckasRanarison/tailwind-tools.nvim",
+    name = "tailwind-tools",
+    build = ":UpdateRemotePlugins",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-telescope/telescope.nvim", -- optional
+      "neovim/nvim-lspconfig",         -- optional
     },
+    opts = {}                          -- your configuration
   },
 
   -- Elixir
@@ -341,9 +354,28 @@ require('lazy').setup({
 
   {
     'rcarriga/nvim-notify',
-    config = function()
-      vim.notify = require("notify")
-    end
+    keys = {
+      {
+        "<leader>un",
+        function()
+          require("notify").dismiss({ silent = true, pending = true })
+        end,
+        desc = "Dismiss All [N]otifications",
+      },
+    },
+    opts = {
+      stages = "static",
+      timeout = 3000,
+      max_height = function()
+        return math.floor(vim.o.lines * 0.75)
+      end,
+      max_width = function()
+        return math.floor(vim.o.columns * 0.75)
+      end,
+      on_open = function(win)
+        vim.api.nvim_win_set_config(win, { zindex = 100 })
+      end,
+    },
   },
 
   -- Useful plugin to show you pending keybinds.
@@ -561,9 +593,93 @@ require('lazy').setup({
     dependencies = {
       "nvim-lua/plenary.nvim",       -- Required for v0.4.0+
       "nvim-tree/nvim-web-devicons", -- If you want devicons
-      "stevearc/resession.nvim"      -- Optional, for persistent history
+      -- "stevearc/resession.nvim"      -- Optional, for persistent history
     },
-    config = true
+    config = function()
+      local is_picking_focus = require('cokeline.mappings').is_picking_focus
+      local is_picking_close = require('cokeline.mappings').is_picking_close
+      local get_hex = require('cokeline.hlgroups').get_hl_attr
+
+      local red = vim.g.terminal_color_1
+      local yellow = vim.g.terminal_color_3
+
+      require('cokeline').setup({
+        default_hl = {
+          fg = function(buffer)
+            return
+                buffer.is_focused
+                and get_hex('BufferCurrent', 'fg')
+                or get_hex('BufferInactive', 'fg')
+          end,
+          bg = function(buffer)
+            return
+                buffer.is_focused
+                and get_hex('BufferCurrent', 'bg')
+                or get_hex('BufferInactive', 'bg')
+          end,
+        },
+
+        components = {
+          {
+            text = '',
+            fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
+            bg = function(buffer)
+              return buffer.is_focused and get_hex('ColorColumn', 'bg') or
+                  get_hex('ColorColumn', 'bg')
+            end,
+          },
+          {
+            text = ' ',
+          },
+          {
+            text = function(buffer)
+              return
+                  (is_picking_focus() or is_picking_close())
+                  and buffer.pick_letter .. ' '
+                  or buffer.devicon.icon
+            end,
+            fg = function(buffer)
+              return
+                  (is_picking_focus() and yellow)
+                  or (is_picking_close() and red)
+                  or buffer.devicon.color
+            end,
+            italic = function()
+              return
+                  (is_picking_focus() or is_picking_close())
+            end,
+            bold = function()
+              return
+                  (is_picking_focus() or is_picking_close())
+            end
+          },
+          {
+            text = ' ',
+          },
+          {
+            text = function(buffer) return buffer.filename .. '  ' end,
+            bold = function(buffer) return buffer.is_focused end,
+          },
+          {
+            text = '󰅗',
+            on_click = function(_, _, _, _, buffer)
+              buffer:delete()
+            end,
+          },
+          {
+            text = ' ',
+          },
+          {
+            text = '',
+            fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
+            bg = function(buffer)
+              return buffer.is_focused and get_hex('ColorColumn', 'bg') or
+                  get_hex('ColorColumn', 'bg')
+            end,
+          },
+        },
+      })
+    end
   },
 
   { 'famiu/bufdelete.nvim' },
@@ -663,8 +779,8 @@ vim.keymap.set('n', '<leader>xh', vim.diagnostic.open_float, { desc = 'Open floa
 
 
 -- Navigation keymaps
-vim.keymap.set('n', '<S-h>', '<cmd>bprevious<cr>', { desc = 'Go to previous buffer' })
-vim.keymap.set('n', '<S-l>', '<cmd>bnext<cr>', { desc = 'Go to next buffer' })
+vim.keymap.set('n', '<S-h>', '<Plug>(cokeline-focus-prev)', { desc = 'Go to previous buffer' })
+vim.keymap.set('n', '<S-l>', '<Plug>(cokeline-focus-next)', { desc = 'Go to next buffer' })
 
 -- Buffer commands
 vim.keymap.set("n", "<leader>bd", "<cmd>Bdelete<cr>", { desc = 'Delete current buffer' })
@@ -818,6 +934,9 @@ vim.defer_fn(function()
       'diff',
       'cpp',
       'go',
+      'gomod',
+      'gowork',
+      'gosum',
       'lua',
       'python',
       'rust',
@@ -830,7 +949,11 @@ vim.defer_fn(function()
       'php',
       'gleam',
       'elixir',
+      'eex',
+      'heex',
       'yaml',
+      'zig',
+      'svelte',
     },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
@@ -1006,11 +1129,27 @@ require('mason-lspconfig').setup()
 --
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
+
+local mason_registry = require('mason-registry')
+local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path() .. '/node_modules/@vue/typescript-plugin'
 local servers = {
   -- clangd = {},
-  -- gopls = {},
+  gopls = {},
   -- rust_analyzer = {},
-  tsserver = {},
+  tsserver = {
+    init_options = {
+      plugins = {
+        {
+          name = '@vue/typescript-plugin',
+          location = vue_language_server_path,
+          languages = { 'vue' },
+        },
+      },
+    },
+    filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+  },
+
+  volar = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
@@ -1018,13 +1157,12 @@ local servers = {
       workspace = { checkThirdParty = false },
       telemetry = { enable = false },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-      -- diagnostics = { disable = { 'missing-fields' } },
+      diagnostics = { disable = { 'missing-fields' } },
     },
   },
 
-  phpactor = {
-    filetypes = { 'php' },
-  },
+
+  intelephense = {},
 }
 
 -- Setup neovim lua configuration

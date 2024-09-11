@@ -9,6 +9,8 @@ return {
       -- "mrcjkb/rustaceanvim",
       "jfpedroza/neotest-elixir",
       'V13Axel/neotest-pest',
+      "fredrikaverpil/neotest-golang",
+      'leoluz/nvim-dap-go',
     },
     keys = {
       { "<leader>ctn", function() require("neotest").run.run() end, desc = "[C]ode [T]ests Run [N]earest" },
@@ -39,6 +41,11 @@ return {
           require('neotest-elixir'),
           require('neotest-pest')({
             sail_enabled = function() return true end,
+          }),
+          require("neotest-golang")({
+            -- Here we can set options for neotest-golang, e.g.
+            -- go_test_args = { "-v", "-race", "-count=1", "-timeout=60s" },
+            dap_go_enabled = true, -- requires leoluz/nvim-dap-go
           }),
         },
       })
