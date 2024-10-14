@@ -9,6 +9,7 @@ return {
         typescriptreact = { 'eslint_d', },
         javascript = { 'eslint_d', },
         javascriptreact = { 'eslint_d', },
+        vue = { 'eslint_d' },
       }
 
       vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
@@ -32,6 +33,7 @@ return {
           javascriptreact = { { "prettierd", "prettier" } },
           typescript = { { "prettierd", "prettier" } },
           typescriptreact = { { "prettierd", "prettier" } },
+          vue = { { "prettierd", "prettier" } },
 
           gleam = { "gleam" },
 

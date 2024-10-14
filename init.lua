@@ -172,14 +172,14 @@ require('lazy').setup({
   },
 
   -- TypeScript
-  -- {
-  --   "pmizio/typescript-tools.nvim",
-  --   dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-  --   ft = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
-  --   opts = {
-  --     on_attach = require('utils').on_attach
-  --   },
-  -- },
+  {
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    ft = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
+    opts = {
+      on_attach = require('utils').on_attach
+    },
+  },
 
   -- TailwindCSS
   {
@@ -574,6 +574,12 @@ require('lazy').setup({
     end
   },
 
+  -- Lazy.nvim
+  {
+    "folke/drop.nvim",
+    opts = {}
+  },
+
   -- nvim-tree
   -- {
   --   "nvim-tree/nvim-tree.lua",
@@ -657,15 +663,39 @@ require('lazy').setup({
             text = ' ',
           },
           {
-            text = function(buffer) return buffer.filename .. '  ' end,
+            text = function(buffer) return buffer.filename .. ' ' end,
             bold = function(buffer) return buffer.is_focused end,
           },
           {
-            text = '󰅗',
+            text = function(buffer)
+              return (buffer.diagnostics.errors > 0 and ' ') or ''
+            end,
+            fg = get_hex('DiagnosticError', 'fg')
+          },
+          {
+            text = function(buffer)
+              return (buffer.diagnostics.warnings > 0 and ' ') or ''
+            end,
+            fg = get_hex('DiagnosticWarn', 'fg')
+          },
+          {
+            ---@param buffer Buffer
+            text = function(buffer)
+              if buffer.is_modified then
+                return ""
+              end
+              return "󰅖"
+            end,
             on_click = function(_, _, _, _, buffer)
               buffer:delete()
             end,
           },
+          -- {
+          --   text = '󰅗',
+          --   on_click = function(_, _, _, _, buffer)
+          --     buffer:delete()
+          --   end,
+          -- },
           {
             text = ' ',
           },
@@ -698,6 +728,16 @@ require('lazy').setup({
 
   --
   -- Fuzzy Finder (files, lsp, etc)
+  {
+    "ibhagwan/fzf-lua",
+    -- optional for icon support
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      -- calling `setup` is optional for customization
+      require("fzf-lua").setup({})
+    end
+  },
+
   {
     'nvim-telescope/telescope.nvim',
     branch = '0.1.x',
@@ -915,7 +955,7 @@ vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]e
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<D-p>', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<D-p>', require('fzf-lua').files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -1130,26 +1170,29 @@ require('mason-lspconfig').setup()
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 
-local mason_registry = require('mason-registry')
-local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path() .. '/node_modules/@vue/typescript-plugin'
+-- dumb vue language server setup
+-- local mason_registry = require('mason-registry')
+-- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path() ..
+--     '/node_modules/@vue/language_server'
+
 local servers = {
   -- clangd = {},
   gopls = {},
   -- rust_analyzer = {},
-  tsserver = {
-    init_options = {
-      plugins = {
-        {
-          name = '@vue/typescript-plugin',
-          location = vue_language_server_path,
-          languages = { 'vue' },
-        },
-      },
-    },
-    filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
-  },
+  -- tsserver = {
+  -- init_options = {
+  --   plugins = {
+  --     {
+  --       name = '@vue/typescript-plugin',
+  --       location = vue_language_server_path .. '/node_modules/@vue/typescript-plugin',
+  --       languages = { 'vue' },
+  --     },
+  --   },
+  -- },
+  -- filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+  -- },
 
-  volar = {},
+  -- volar = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
@@ -1192,6 +1235,13 @@ mason_lspconfig.setup_handlers {
     -- we don't want mason_lspconfig to set it up because we'll get two instances of rust_analyzer
     if server_name == 'rust_analyzer' then return end
 
+    -- handled through typescript-tools
+    if server_name == 'tsserver' then return end
+    if server_name == 'ts_ls' then return end
+
+    -- not using for now
+    if server_name == 'volar' then return end
+
     if server_name == 'nextls' then return end
     if server_name == 'elixir-ls' then return end
 
@@ -1207,6 +1257,18 @@ mason_lspconfig.setup_handlers {
 -- require('typescript-tools').setup({
 --   on_attach = on_attach
 -- })
+
+-- check if in start tag
+local function is_in_start_tag()
+  local ts_utils = require('nvim-treesitter.ts_utils')
+  local node = ts_utils.get_node_at_cursor()
+  if not node then
+    return false
+  end
+  local node_to_check = { 'start_tag', 'self_closing_tag', 'directive_attribute' }
+  return vim.tbl_contains(node_to_check, node:type())
+end
+
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
@@ -1254,11 +1316,46 @@ cmp.setup {
     end, { 'i', 's' }),
   },
   sources = {
-    { name = 'nvim_lsp' },
+    {
+      name = 'nvim_lsp',
+      ---@param entry cmp.Entry
+      ---@param ctx cmp.Context
+      entry_filter = function(entry, ctx)
+        -- Check if the buffer type is 'vue'
+        if ctx.filetype ~= 'vue' then
+          return true
+        end
+        -- Use a buffer-local variable to cache the result of the Treesitter check
+        local bufnr = ctx.bufnr
+        local cached_is_in_start_tag = vim.b[bufnr]._vue_ts_cached_is_in_start_tag
+        if cached_is_in_start_tag == nil then
+          vim.b[bufnr]._vue_ts_cached_is_in_start_tag = is_in_start_tag()
+        end
+        -- If not in start tag, return true
+        if vim.b[bufnr]._vue_ts_cached_is_in_start_tag == false then
+          return true
+        end
+
+        local cursor_before_line = ctx.cursor_before_line
+        -- For events
+        if cursor_before_line:sub(-1) == '@' then
+          return entry.completion_item.label:match('^@')
+          -- For props also exclude events with `:on-` prefix
+        elseif cursor_before_line:sub(-1) == ':' then
+          return entry.completion_item.label:match('^:') and not entry.completion_item.label:match('^:on%-')
+        else
+          return true
+        end
+      end
+    },
     { name = 'luasnip' },
     { name = 'path' },
   },
 }
+cmp.event:on('menu_closed', function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  vim.b[bufnr]._vue_ts_cached_is_in_start_tag = nil
+end)
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
