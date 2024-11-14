@@ -1,3 +1,5 @@
+local Base = require('base.init')
+
 return {
   {
     -- Set lualine as statusline
@@ -12,9 +14,9 @@ return {
       require('lualine').setup({
         options = {
           icons_enabled = true,
-          theme = 'auto',
+          theme = 'catppuccin',
           section_separators = { left = '', right = '' },
-          component_separators = { left = '', right = '' }
+          component_separators = { left = '|', right = '|' }
         },
         sections = {
           lualine_x = {
@@ -22,19 +24,19 @@ return {
             {
               function() return require("noice").api.status.command.get() end,
               cond = function() return package.loaded["noice"] and require("noice").api.status.command.has() end,
-              -- color = function() return LazyVim.ui.fg("Statement") end,
+              color = function () return Base.ui.fg("Statement") end,
             },
             -- stylua: ignore
             {
               function() return require("noice").api.status.mode.get() end,
               cond = function() return package.loaded["noice"] and require("noice").api.status.mode.has() end,
-              -- color = function() return LazyVim.ui.fg("Constant") end,
+              color = function() return Base.ui.fg("Constant") end,
             },
             -- stylua: ignore
             {
               function() return "  " .. require("dap").status() end,
               cond = function() return package.loaded["dap"] and require("dap").status() ~= "" end,
-              -- color = function() return LazyVim.ui.fg("Debug") end,
+              color = function() return Base.ui.fg("Debug") end,
             },
             tabwidth,
             'encoding',
@@ -47,7 +49,6 @@ return {
         },
         extensions = {
           'lazy',
-          'nvim-tree',
           'quickfix',
         },
         opts = function(_, opts)
@@ -70,4 +71,3 @@ return {
       })
     end
   },
-}

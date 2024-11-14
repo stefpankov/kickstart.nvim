@@ -112,16 +112,71 @@ require('lazy').setup({
     priority = 1000,
   },
 
+  -- {
+  --   'rose-pine/neovim',
+  --   name = 'rose-pine',
+  --   lazy = false,
+  --   priority = 1000,
+  --   config = function()
+  --     require('rose-pine').setup {
+  --       dark_variant = "moon"
+  --     }
+  --   end
+  -- },
+
   {
-    'rose-pine/neovim',
-    name = 'rose-pine',
-    lazy = false,
+    "catppuccin/nvim",
+    name = "catppuccin",
     priority = 1000,
-    config = function()
-      require('rose-pine').setup {
-        dark_variant = "moon"
-      }
-    end
+    opts = {
+      integrations = {
+        aerial = true,
+        alpha = true,
+        cmp = true,
+        dashboard = true,
+        flash = true,
+        grug_far = true,
+        gitsigns = true,
+        headlines = true,
+        illuminate = true,
+        indent_blankline = { enabled = true },
+        leap = true,
+        lsp_trouble = true,
+        mason = true,
+        markdown = true,
+        mini = true,
+        native_lsp = {
+          enabled = true,
+          underlines = {
+            errors = { "undercurl" },
+            hints = { "undercurl" },
+            warnings = { "undercurl" },
+            information = { "undercurl" },
+          },
+        },
+        navic = { enabled = true, custom_bg = "lualine" },
+        neotest = true,
+        neotree = true,
+        noice = true,
+        notify = true,
+        semantic_tokens = true,
+        telescope = true,
+        treesitter = true,
+        treesitter_context = true,
+        which_key = true,
+      },
+    },
+    specs = {
+      {
+        "akinsho/bufferline.nvim",
+        optional = true,
+        opts = function(_, opts)
+          if (vim.g.colors_name or ""):find("catppuccin") then
+            opts.highlights = require("catppuccin.groups.integrations.bufferline").get()
+          end
+        end,
+      },
+    },
   },
 
   -- [[ Movement ]]
@@ -132,10 +187,8 @@ require('lazy').setup({
     opts = {},
     -- stylua: ignore
     keys = {
-      { "<leader>fs", mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "[F]lash [S]earch" },
-      { "<leader>ft", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "[F]lash [T]reesitter" },
-      { "<leader>fr", mode = "o",               function() require("flash").remote() end,            desc = "[F]lash [R]emote" },
-      { "<leader>ft", mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "[F]lash [R]emote Treesitter" },
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     },
   },
 
@@ -365,7 +418,7 @@ require('lazy').setup({
     },
     opts = {
       stages = "static",
-      timeout = 3000,
+      timeout = 2000,
       max_height = function()
         return math.floor(vim.o.lines * 0.75)
       end,
@@ -457,16 +510,16 @@ require('lazy').setup({
         -- visual mode
         map('v', '<leader>hs', function()
           gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'Stage git hunk' })
+        end, { desc = 'stage git hunk' })
         map('v', '<leader>hr', function()
           gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'Reset git hunk' })
+        end, { desc = 'reset git hunk' })
         -- normal mode
         map('n', '<leader>hs', gs.stage_hunk, { desc = 'git stage hunk' })
         map('n', '<leader>hr', gs.reset_hunk, { desc = 'git reset hunk' })
-        map('n', '<leader>hS', gs.stage_buffer, { desc = 'git Stage buffer' })
+        map('n', '<leader>hS', gs.stage_buffer, { desc = 'git stage buffer' })
         map('n', '<leader>hu', gs.undo_stage_hunk, { desc = 'undo stage hunk' })
-        map('n', '<leader>hR', gs.reset_buffer, { desc = 'git Reset buffer' })
+        map('n', '<leader>hR', gs.reset_buffer, { desc = 'git reset buffer' })
         map('n', '<leader>hp', gs.preview_hunk, { desc = 'preview git hunk' })
         map('n', '<leader>hb', function()
           gs.blame_line { full = false }
@@ -575,10 +628,10 @@ require('lazy').setup({
   },
 
   -- Lazy.nvim
-  {
-    "folke/drop.nvim",
-    opts = {}
-  },
+  -- {
+  --   "folke/drop.nvim",
+  --   opts = {}
+  -- },
 
   -- nvim-tree
   -- {
@@ -592,125 +645,6 @@ require('lazy').setup({
   --     require("nvim-tree").setup {}
   --   end,
   -- },
-
-  {
-    -- Set cokeline as bufferline
-    "willothy/nvim-cokeline",
-    dependencies = {
-      "nvim-lua/plenary.nvim",       -- Required for v0.4.0+
-      "nvim-tree/nvim-web-devicons", -- If you want devicons
-      -- "stevearc/resession.nvim"      -- Optional, for persistent history
-    },
-    config = function()
-      local is_picking_focus = require('cokeline.mappings').is_picking_focus
-      local is_picking_close = require('cokeline.mappings').is_picking_close
-      local get_hex = require('cokeline.hlgroups').get_hl_attr
-
-      local red = vim.g.terminal_color_1
-      local yellow = vim.g.terminal_color_3
-
-      require('cokeline').setup({
-        default_hl = {
-          fg = function(buffer)
-            return
-                buffer.is_focused
-                and get_hex('BufferCurrent', 'fg')
-                or get_hex('BufferInactive', 'fg')
-          end,
-          bg = function(buffer)
-            return
-                buffer.is_focused
-                and get_hex('BufferCurrent', 'bg')
-                or get_hex('BufferInactive', 'bg')
-          end,
-        },
-
-        components = {
-          {
-            text = '',
-            fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
-            bg = function(buffer)
-              return buffer.is_focused and get_hex('ColorColumn', 'bg') or
-                  get_hex('ColorColumn', 'bg')
-            end,
-          },
-          {
-            text = ' ',
-          },
-          {
-            text = function(buffer)
-              return
-                  (is_picking_focus() or is_picking_close())
-                  and buffer.pick_letter .. ' '
-                  or buffer.devicon.icon
-            end,
-            fg = function(buffer)
-              return
-                  (is_picking_focus() and yellow)
-                  or (is_picking_close() and red)
-                  or buffer.devicon.color
-            end,
-            italic = function()
-              return
-                  (is_picking_focus() or is_picking_close())
-            end,
-            bold = function()
-              return
-                  (is_picking_focus() or is_picking_close())
-            end
-          },
-          {
-            text = ' ',
-          },
-          {
-            text = function(buffer) return buffer.filename .. ' ' end,
-            bold = function(buffer) return buffer.is_focused end,
-          },
-          {
-            text = function(buffer)
-              return (buffer.diagnostics.errors > 0 and ' ') or ''
-            end,
-            fg = get_hex('DiagnosticError', 'fg')
-          },
-          {
-            text = function(buffer)
-              return (buffer.diagnostics.warnings > 0 and ' ') or ''
-            end,
-            fg = get_hex('DiagnosticWarn', 'fg')
-          },
-          {
-            ---@param buffer Buffer
-            text = function(buffer)
-              if buffer.is_modified then
-                return ""
-              end
-              return "󰅖"
-            end,
-            on_click = function(_, _, _, _, buffer)
-              buffer:delete()
-            end,
-          },
-          -- {
-          --   text = '󰅗',
-          --   on_click = function(_, _, _, _, buffer)
-          --     buffer:delete()
-          --   end,
-          -- },
-          {
-            text = ' ',
-          },
-          {
-            text = '',
-            fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
-            bg = function(buffer)
-              return buffer.is_focused and get_hex('ColorColumn', 'bg') or
-                  get_hex('ColorColumn', 'bg')
-            end,
-          },
-        },
-      })
-    end
-  },
 
   { 'famiu/bufdelete.nvim' },
 
@@ -797,7 +731,7 @@ require('lazy').setup({
   },
 })
 
-vim.cmd("colorscheme rose-pine")
+vim.cmd("colorscheme catppuccin-macchiato")
 
 require('notify').setup()
 
@@ -819,14 +753,14 @@ vim.keymap.set('n', '<leader>xh', vim.diagnostic.open_float, { desc = 'Open floa
 
 
 -- Navigation keymaps
-vim.keymap.set('n', '<S-h>', '<Plug>(cokeline-focus-prev)', { desc = 'Go to previous buffer' })
-vim.keymap.set('n', '<S-l>', '<Plug>(cokeline-focus-next)', { desc = 'Go to next buffer' })
+-- vim.keymap.set('n', '<S-h>', '<Plug>(cokeline-focus-prev)', { desc = 'Go to previous buffer' })
+-- vim.keymap.set('n', '<S-l>', '<Plug>(cokeline-focus-next)', { desc = 'Go to next buffer' })
 
 -- Buffer commands
 vim.keymap.set("n", "<leader>bd", "<cmd>Bdelete<cr>", { desc = 'Delete current buffer' })
-vim.keymap.set("n", "<leader>bp", function()
-  require('cokeline.mappings').pick("focus")
-end, { desc = "Pick a buffer to focus" })
+-- vim.keymap.set("n", "<leader>bp", function()
+--   require('cokeline.mappings').pick("focus")
+-- end, { desc = "Pick a buffer to focus" })
 
 -- Move to window using the <ctrl> hjkl keys
 vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window", remap = true })
@@ -951,17 +885,17 @@ local function telescope_live_grep_open_files()
     prompt_title = 'Live Grep in Open Files',
   }
 end
-vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
-vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
-vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<D-p>', require('fzf-lua').files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
-vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
-vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>f/', telescope_live_grep_open_files, { desc = '[F]ind [/] in Open Files' })
+vim.keymap.set('n', '<leader>fs', require('telescope.builtin').builtin, { desc = '[F]ind [S]elect Telescope' })
+vim.keymap.set('n', '<leader>fg', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
+vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
+vim.keymap.set('n', '<D-p>', require('fzf-lua').files, { desc = '[F]ind [F]iles' })
+vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = '[F]ind in [H]elp' })
+vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })
+vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
+vim.keymap.set('n', '<leader>fG', ':LiveGrepGitRoot<cr>', { desc = '[F]ind by [G]rep on Git Root' })
+vim.keymap.set('n', '<leader>fd', require('telescope.builtin').diagnostics, { desc = '[F]ind [D]iagnostics' })
+vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = '[F]ind [R]esume' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -1079,7 +1013,7 @@ local on_attach = function(_, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
-  nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+  nmap('<leader>lrn', vim.lsp.buf.rename, '[R]e[n]ame')
   nmap('<leader>ca', function()
     vim.lsp.buf.code_action()
   end, '[C]ode [A]ction')
@@ -1122,7 +1056,7 @@ wk.add({
   { "<leader>d_",  hidden = true },
   { "<leader>e",   group = "[E]xplorer" },
   { "<leader>e_",  hidden = true },
-  { "<leader>f",   group = "[F]lash" },
+  { "<leader>f",   group = "[F]ind" },
   { "<leader>f_",  hidden = true },
   { "<leader>g",   group = "[G]it" },
   { "<leader>g_",  hidden = true },
@@ -1138,8 +1072,6 @@ wk.add({
   { "<leader>lw_", hidden = true },
   { "<leader>r",   group = "[R]ename" },
   { "<leader>r_",  hidden = true },
-  { "<leader>s",   group = "[S]earch" },
-  { "<leader>s_",  hidden = true },
   { "<leader>t",   group = "[T]oggle" },
   { "<leader>t_",  hidden = true },
   { "<leader>v",   group = "[V]isit" },
@@ -1358,4 +1290,3 @@ cmp.event:on('menu_closed', function()
 end)
 
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et

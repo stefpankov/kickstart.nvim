@@ -4,7 +4,9 @@ return {
     "mfussenegger/nvim-lint",
     config = function()
       -- [[ Configure linting ]]
-      require('lint').linters_by_ft = {
+      local lint = require('lint')
+
+      lint.linters_by_ft = {
         typescript = { 'eslint_d', },
         typescriptreact = { 'eslint_d', },
         javascript = { 'eslint_d', },
@@ -29,16 +31,20 @@ return {
         formatters_by_ft = {
           lua = { "stylua" },
           -- Use a sub-list to run only the first available formatter
-          javascript = { { "prettierd", "prettier" } },
-          javascriptreact = { { "prettierd", "prettier" } },
-          typescript = { { "prettierd", "prettier" } },
-          typescriptreact = { { "prettierd", "prettier" } },
-          vue = { { "prettierd", "prettier" } },
+          javascript = { "prettierd", "prettier" },
+          javascriptreact = { "prettierd", "prettier" },
+          typescript = { "prettierd", "prettier" },
+          typescriptreact = { "prettierd", "prettier" },
+          vue = { "prettierd", "prettier" },
 
           gleam = { "gleam" },
 
           elixir = { "mix format" },
         },
+
+        default_format_opts = {
+          lsp_format = "fallback"
+        }
       })
 
       vim.api.nvim_create_user_command("Format", function(args)
