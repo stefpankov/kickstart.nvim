@@ -40,6 +40,8 @@ return {
           gleam = { "gleam" },
 
           elixir = { "mix format" },
+
+          php = { "pint" },
         },
 
         default_format_opts = {

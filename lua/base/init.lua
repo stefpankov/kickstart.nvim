@@ -77,6 +77,7 @@ Base.config.icons = {
   },
   ft = {
     octo = "",
+    blade = "󰫐",
   },
   dap = {
     Stopped             = { "󰁕 ", "DiagnosticWarn", "DapStoppedLine" },

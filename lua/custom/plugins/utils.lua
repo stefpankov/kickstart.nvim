@@ -7,7 +7,7 @@ return {
     opts = {
       bigfile = { enabled = true },
       notifier = {
-        enabled = false,
+        enabled = true,
       },
       quickfile = { enabled = true },
       statuscolumn = { enabled = false },
@@ -19,14 +19,16 @@ return {
       }
     },
     keys = {
-      { "<leader>gg", function() Snacks.lazygit() end,                 desc = "Lazygit" },
-      { "<leader>gb", function() Snacks.git.blame_line() end,          desc = "Git Blame Line" },
-      { "<leader>gB", function() Snacks.gitbrowse() end,               desc = "Git Browse" },
-      { "<leader>gf", function() Snacks.lazygit.log_file() end,        desc = "Lazygit Current File History" },
-      { "<leader>gl", function() Snacks.lazygit.log() end,             desc = "Lazygit Log (cwd)" },
-      { "<leader>cR", function() Snacks.rename() end,                  desc = "Rename File" },
-      { "<c-/>",      function() Snacks.terminal() end,                desc = "Toggle Terminal" },
-      { "<c-_>",      function() Snacks.terminal() end,                desc = "which_key_ignore" },
+      { "<leader>gg",  function() Snacks.lazygit() end,          desc = "Lazygit" },
+      { "<leader>gb",  function() Snacks.git.blame_line() end,   desc = "Git Blame Line" },
+      { "<leader>gB",  function() Snacks.gitbrowse() end,        desc = "Git Browse" },
+      { "<leader>gf",  function() Snacks.lazygit.log_file() end, desc = "Lazygit Current File History" },
+      { "<leader>gl",  function() Snacks.lazygit.log() end,      desc = "Lazygit Log (cwd)" },
+      { "<leader>cR",  function() Snacks.rename() end,           desc = "Rename File" },
+      { "<c-/>",       function() Snacks.terminal() end,         desc = "Toggle Terminal" },
+      { "<c-_>",       function() Snacks.terminal() end,         desc = "which_key_ignore" },
+      { "<leader>bst", function() Snacks.scratch() end,          desc = "Toggle Scratch Buffer" },
+      { "<leader>bss", function() Snacks.scratch.select() end,   desc = "Select Scratch Buffer" },
     },
     init = function()
       vim.api.nvim_create_autocmd("User", {
@@ -48,10 +50,17 @@ return {
           Snacks.toggle.diagnostics():map("<leader>ud")
           Snacks.toggle.line_number():map("<leader>ul")
           Snacks.toggle.option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map(
-          "<leader>uc")
+            "<leader>uc")
           Snacks.toggle.treesitter():map("<leader>uT")
           Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map("<leader>ub")
           Snacks.toggle.inlay_hints():map("<leader>uh")
+        end,
+      })
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "MiniFilesActionRename",
+        callback = function(event)
+          Snacks.rename.on_rename_file(event.data.from, event.data.to)
         end,
       })
     end,

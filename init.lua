@@ -405,31 +405,31 @@ require('lazy').setup({
     },
   },
 
-  {
-    'rcarriga/nvim-notify',
-    keys = {
-      {
-        "<leader>un",
-        function()
-          require("notify").dismiss({ silent = true, pending = true })
-        end,
-        desc = "Dismiss All [N]otifications",
-      },
-    },
-    opts = {
-      stages = "static",
-      timeout = 2000,
-      max_height = function()
-        return math.floor(vim.o.lines * 0.75)
-      end,
-      max_width = function()
-        return math.floor(vim.o.columns * 0.75)
-      end,
-      on_open = function(win)
-        vim.api.nvim_win_set_config(win, { zindex = 100 })
-      end,
-    },
-  },
+  -- {
+  --   'rcarriga/nvim-notify',
+  --   keys = {
+  --     {
+  --       "<leader>un",
+  --       function()
+  --         require("notify").dismiss({ silent = true, pending = true })
+  --       end,
+  --       desc = "Dismiss All [N]otifications",
+  --     },
+  --   },
+  --   opts = {
+  --     stages = "static",
+  --     timeout = 2000,
+  --     max_height = function()
+  --       return math.floor(vim.o.lines * 0.75)
+  --     end,
+  --     max_width = function()
+  --       return math.floor(vim.o.columns * 0.75)
+  --     end,
+  --     on_open = function(win)
+  --       vim.api.nvim_win_set_config(win, { zindex = 100 })
+  --     end,
+  --   },
+  -- },
 
   -- Useful plugin to show you pending keybinds.
   {
@@ -733,7 +733,7 @@ require('lazy').setup({
 
 vim.cmd("colorscheme catppuccin-macchiato")
 
-require('notify').setup()
+-- require('notify').setup()
 
 -- [[ Basic Keymaps ]]
 
@@ -1208,6 +1208,40 @@ local cmp = require 'cmp'
 local luasnip = require 'luasnip'
 require('luasnip.loaders.from_vscode').lazy_load()
 luasnip.config.setup {}
+local snippet = luasnip.snippet
+local insert = luasnip.insert_node
+local snip_fmt = require('luasnip.extras.fmt').fmt
+
+luasnip.add_snippets("php", {
+  snippet("class", snip_fmt(
+    [[
+    <?php
+
+    namespace {};
+
+    class {}
+    {{
+        {}
+    }}
+    ]], {
+      insert(1), insert(2), insert(0)
+    }
+  )),
+  snippet("interface", snip_fmt(
+    [[
+    <?php
+
+    namespace {};
+
+    interface {}
+    {{
+        {}
+    }}
+    ]], {
+      insert(1), insert(2), insert(0)
+    }
+  ))
+})
 
 cmp.setup {
   snippet = {

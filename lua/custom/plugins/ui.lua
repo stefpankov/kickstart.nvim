@@ -30,7 +30,7 @@ local ui = {
         },
       },
       presets = {
-        bottom_search = true,
+        bottom_search = false,
         command_palette = true,
         long_message_to_split = true,
       },
@@ -116,125 +116,6 @@ local ui = {
       })
     end,
   },
-
-  -- {
-  --   -- Set cokeline as bufferline
-  --   "willothy/nvim-cokeline",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",       -- Required for v0.4.0+
-  --     "nvim-tree/nvim-web-devicons", -- If you want devicons
-  --     -- "stevearc/resession.nvim"      -- Optional, for persistent history
-  --   },
-  --   config = function()
-  --     local is_picking_focus = require('cokeline.mappings').is_picking_focus
-  --     local is_picking_close = require('cokeline.mappings').is_picking_close
-  --     local get_hex = require('cokeline.hlgroups').get_hl_attr
-  --
-  --     local red = vim.g.terminal_color_1
-  --     local yellow = vim.g.terminal_color_3
-  --
-  --     require('cokeline').setup({
-  --       default_hl = {
-  --         fg = function(buffer)
-  --           return
-  --               buffer.is_focused
-  --               and get_hex('BufferCurrent', 'fg')
-  --               or get_hex('BufferInactive', 'fg')
-  --         end,
-  --         bg = function(buffer)
-  --           return
-  --               buffer.is_focused
-  --               and get_hex('BufferCurrent', 'bg')
-  --               or get_hex('BufferInactive', 'bg')
-  --         end,
-  --       },
-  --
-  --       components = {
-  --         {
-  --           text = '',
-  --           fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
-  --           bg = function(buffer)
-  --             return buffer.is_focused and get_hex('ColorColumn', 'bg') or
-  --                 get_hex('ColorColumn', 'bg')
-  --           end,
-  --         },
-  --         {
-  --           text = ' ',
-  --         },
-  --         {
-  --           text = function(buffer)
-  --             return
-  --                 (is_picking_focus() or is_picking_close())
-  --                 and buffer.pick_letter .. ' '
-  --                 or buffer.devicon.icon
-  --           end,
-  --           fg = function(buffer)
-  --             return
-  --                 (is_picking_focus() and yellow)
-  --                 or (is_picking_close() and red)
-  --                 or buffer.devicon.color
-  --           end,
-  --           italic = function()
-  --             return
-  --                 (is_picking_focus() or is_picking_close())
-  --           end,
-  --           bold = function()
-  --             return
-  --                 (is_picking_focus() or is_picking_close())
-  --           end
-  --         },
-  --         {
-  --           text = ' ',
-  --         },
-  --         {
-  --           text = function(buffer) return buffer.filename .. ' ' end,
-  --           bold = function(buffer) return buffer.is_focused end,
-  --         },
-  --         {
-  --           text = function(buffer)
-  --             return (buffer.diagnostics.errors > 0 and ' ') or ''
-  --           end,
-  --           fg = get_hex('DiagnosticError', 'fg')
-  --         },
-  --         {
-  --           text = function(buffer)
-  --             return (buffer.diagnostics.warnings > 0 and ' ') or ''
-  --           end,
-  --           fg = get_hex('DiagnosticWarn', 'fg')
-  --         },
-  --         {
-  --           ---@param buffer Buffer
-  --           text = function(buffer)
-  --             if buffer.is_modified then
-  --               return ""
-  --             end
-  --             -- return "󰅖"
-  --             return '󰅗'
-  --           end,
-  --           on_click = function(_, _, _, _, buffer)
-  --             buffer:delete()
-  --           end,
-  --         },
-  --         -- {
-  --         --   text = '󰅗',
-  --         --   on_click = function(_, _, _, _, buffer)
-  --         --     buffer:delete()
-  --         --   end,
-  --         -- },
-  --         {
-  --           text = ' ',
-  --         },
-  --         {
-  --           text = '',
-  --           fg = function(buffer) return buffer.is_focused and get_hex('BufferCurrent', 'bg') or get_hex('Normal', 'bg') end,
-  --           bg = function(buffer)
-  --             return buffer.is_focused and get_hex('ColorColumn', 'bg') or
-  --                 get_hex('ColorColumn', 'bg')
-  --           end,
-  --         },
-  --       },
-  --     })
-  --   end
-  -- },
 }
 
+return ui
