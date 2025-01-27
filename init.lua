@@ -102,8 +102,8 @@ require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
 
   -- Git related plugins
-  'tpope/vim-fugitive',
-  'tpope/vim-rhubarb',
+  -- 'tpope/vim-fugitive',
+  -- 'tpope/vim-rhubarb',
 
   -- Detect tabstop and shiftwidth automatically
   {
@@ -135,6 +135,7 @@ require('lazy').setup({
         cmp = true,
         dashboard = true,
         flash = true,
+        fzf = true,
         grug_far = true,
         gitsigns = true,
         headlines = true,
@@ -160,7 +161,6 @@ require('lazy').setup({
         noice = true,
         notify = true,
         semantic_tokens = true,
-        telescope = true,
         treesitter = true,
         treesitter_context = true,
         which_key = true,
@@ -238,10 +238,11 @@ require('lazy').setup({
   {
     "luckasRanarison/tailwind-tools.nvim",
     name = "tailwind-tools",
+    ft = { 'typescriptreact', 'javascriptreact', 'vue', 'html', 'css', 'heex' },
     build = ":UpdateRemotePlugins",
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
-      "nvim-telescope/telescope.nvim", -- optional
+      -- "nvim-telescope/telescope.nvim", -- optional
       "neovim/nvim-lspconfig",         -- optional
     },
     opts = {}                          -- your configuration
@@ -294,7 +295,7 @@ require('lazy').setup({
             dap.adapters.mix_task = {
               type = "executable",
               command =
-              "/Users/stefan/.cache/nvim/elixir-tools.nvim/installs/elixir-lsp/elixir-ls/tags_v0.22.0/1.17.1-26/debug_adapter.sh",
+              "/Users/stefan/.cache/nvim/elixir-tools.nvim/installs/elixir-lsp/elixir-ls/tags_v0.22.0/1.18.1-27/debug_adapter.sh",
               args = {}
             }
 
@@ -563,13 +564,13 @@ require('lazy').setup({
       -- mini.nvim modules
       require('mini.trailspace').setup()
       require('mini.jump').setup()
-      require('mini.basics').setup({
-        options = {
-          --[[ basic = true, ]]
-          extra_ui = true,
-          win_borders = 'bold',
-        }
-      })
+      -- require('mini.basics').setup({
+      --   options = {
+      --     --[[ basic = true, ]]
+      --     extra_ui = false,
+      --     win_borders = 'bold',
+      --   }
+      -- })
       require('mini.cursorword').setup()
       require('mini.pairs').setup()
       -- require('mini.sessions').setup({
@@ -589,22 +590,9 @@ require('lazy').setup({
         local path = vim.api.nvim_buf_get_name(0)
 
         MiniFiles.open(path)
-      end, { desc = "Toggle explorer" })
+      end, { desc = "Show current file in explorer" })
 
       require('mini.visits').setup()
-
-      local starter = require('mini.starter')
-      starter.setup({
-        items = {
-          starter.sections.telescope(),
-          starter.sections.sessions(),
-          starter.sections.builtin_actions(),
-        },
-        content_hooks = {
-          starter.gen_hook.adding_bullet(),
-          starter.gen_hook.aligning('center', 'center'),
-        },
-      })
 
       local make_select_path = function(select_global, recency_weight)
         local visits = require('mini.visits')
@@ -627,26 +615,7 @@ require('lazy').setup({
     end
   },
 
-  -- Lazy.nvim
-  -- {
-  --   "folke/drop.nvim",
-  --   opts = {}
-  -- },
-
-  -- nvim-tree
-  -- {
-  --   "nvim-tree/nvim-tree.lua",
-  --   version = "*",
-  --   lazy = false,
-  --   dependencies = {
-  --     "nvim-tree/nvim-web-devicons",
-  --   },
-  --   config = function()
-  --     require("nvim-tree").setup {}
-  --   end,
-  -- },
-
-  { 'famiu/bufdelete.nvim' },
+  -- { 'famiu/bufdelete.nvim' },
 
   {
     -- Add indentation guides even on blank lines
@@ -657,9 +626,6 @@ require('lazy').setup({
     opts = {},
   },
 
-  -- "gc" to comment visual regions/lines
-  -- { 'numToStr/Comment.nvim', opts = {} },
-
   --
   -- Fuzzy Finder (files, lsp, etc)
   {
@@ -668,34 +634,22 @@ require('lazy').setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       -- calling `setup` is optional for customization
-      require("fzf-lua").setup({})
+      require("fzf-lua").setup({'fzf-native'})
     end
   },
 
-  {
-    'nvim-telescope/telescope.nvim',
-    branch = '0.1.x',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      -- Fuzzy Finder Algorithm which requires local dependencies to be built.
-      -- Only load if `make` is available. Make sure you have the system
-      -- requirements installed.
-      {
-        'nvim-telescope/telescope-fzf-native.nvim',
-        -- NOTE: If you are having trouble with this installation,
-        --       refer to the README for telescope-fzf-native for more instructions.
-        build = 'make',
-        cond = function()
-          return vim.fn.executable 'make' == 1
-        end,
-      },
-    },
-  },
+  -- {
+  --   'nvim-telescope/telescope.nvim',
+  --   branch = '0.1.x',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  -- },
 
-  {
-    "nvim-telescope/telescope-file-browser.nvim",
-    dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
-  },
+  -- {
+  --   "nvim-telescope/telescope-file-browser.nvim",
+  --   dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
+  -- },
 
   { 'nvim-pack/nvim-spectre', opts = {} },
 
@@ -733,8 +687,6 @@ require('lazy').setup({
 
 vim.cmd("colorscheme catppuccin-macchiato")
 
--- require('notify').setup()
-
 -- [[ Basic Keymaps ]]
 
 -- Keymaps for better default experience
@@ -757,7 +709,11 @@ vim.keymap.set('n', '<leader>xh', vim.diagnostic.open_float, { desc = 'Open floa
 -- vim.keymap.set('n', '<S-l>', '<Plug>(cokeline-focus-next)', { desc = 'Go to next buffer' })
 
 -- Buffer commands
-vim.keymap.set("n", "<leader>bd", "<cmd>Bdelete<cr>", { desc = 'Delete current buffer' })
+vim.keymap.set("n", "<leader>bd",
+  function ()
+    require('snacks').bufdelete()
+  end,
+{ desc = 'Delete current buffer' })
 -- vim.keymap.set("n", "<leader>bp", function()
 --   require('cokeline.mappings').pick("focus")
 -- end, { desc = "Pick a buffer to focus" })
@@ -805,32 +761,27 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- This opens a window that shows you all of the keymaps for the current
 -- Telescope picker. This is really useful to discover what Telescope can
 -- do as well as how to actually do it!
-require('telescope').setup {
-  defaults = {
-    mappings = {
-      i = {
-        ['<C-u>'] = false,
-        ['<C-d>'] = false,
-      },
-    },
-  },
-  pickers = {
-    find_files = {
-      theme = "dropdown",
-      hidden = true,
-    }
-  },
-  extensions = {
-    ['ui-select'] = {
-      require('telescope.themes').get_dropdown(),
-    },
-  },
-}
-
--- Enable telescope fzf native, if installed
-pcall(require('telescope').load_extension, 'fzf')
-pcall(require('telescope').load_extension, 'ui-select')
-pcall(require('telescope').load_extension, 'file_browser')
+-- require('telescope').setup {
+--   defaults = {
+--     mappings = {
+--       i = {
+--         ['<C-u>'] = false,
+--         ['<C-d>'] = false,
+--       },
+--     },
+--   },
+--   pickers = {
+--     find_files = {
+--       theme = "dropdown",
+--       hidden = true,
+--     }
+--   },
+--   extensions = {
+--     ['ui-select'] = {
+--       require('telescope.themes').get_dropdown(),
+--     },
+--   },
+-- }
 
 -- Telescope live_grep in git root
 -- Function to find the git root directory based on the current buffer's path
@@ -857,45 +808,29 @@ local function find_git_root()
 end
 
 -- Custom live_grep function to search in git root
-local function live_grep_git_root()
-  local git_root = find_git_root()
-  if git_root then
-    require('telescope.builtin').live_grep {
-      search_dirs = { git_root },
-    }
-  end
-end
+-- local function live_grep_git_root()
+--   local git_root = find_git_root()
+--   if git_root then
+--     require('telescope.builtin').live_grep {
+--       search_dirs = { git_root },
+--     }
+--   end
+-- end
 
-vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
+-- vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
--- See `:help telescope.builtin`
-vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
-vim.keymap.set('n', '<leader>/', function()
-  -- You can pass additional configuration to telescope to change theme, layout, etc.
-  require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-    winblend = 10,
-    previewer = false,
-  })
-end, { desc = '[/] Fuzzily search in current buffer' })
+vim.keymap.set('n', '<leader>?', require('fzf-lua').oldfiles, { desc = '[?] Find recently opened files' })
+vim.keymap.set('n', '<leader><space>', require('fzf-lua').buffers, { desc = '[ ] Find existing buffers' })
+vim.keymap.set('n', '<leader>/', require('fzf-lua').lgrep_curbuf, { desc = '[/] Fuzzily search in current buffer' })
 
-local function telescope_live_grep_open_files()
-  require('telescope.builtin').live_grep {
-    grep_open_files = true,
-    prompt_title = 'Live Grep in Open Files',
-  }
-end
-vim.keymap.set('n', '<leader>f/', telescope_live_grep_open_files, { desc = '[F]ind [/] in Open Files' })
-vim.keymap.set('n', '<leader>fs', require('telescope.builtin').builtin, { desc = '[F]ind [S]elect Telescope' })
-vim.keymap.set('n', '<leader>fg', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
+vim.keymap.set('n', '<leader>fs', require('fzf-lua').builtin, { desc = '[F]ind [S]elect Telescope' })
+vim.keymap.set('n', '<leader>fg', require('fzf-lua').git_files, { desc = 'Search [G]it [F]iles' })
+vim.keymap.set('n', '<leader>ff', require('fzf-lua').files, { desc = '[F]ind [F]iles' })
 vim.keymap.set('n', '<D-p>', require('fzf-lua').files, { desc = '[F]ind [F]iles' })
-vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = '[F]ind in [H]elp' })
-vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })
-vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
-vim.keymap.set('n', '<leader>fG', ':LiveGrepGitRoot<cr>', { desc = '[F]ind by [G]rep on Git Root' })
-vim.keymap.set('n', '<leader>fd', require('telescope.builtin').diagnostics, { desc = '[F]ind [D]iagnostics' })
-vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = '[F]ind [R]esume' })
+vim.keymap.set('n', '<leader>fw', require('fzf-lua').grep_cword, { desc = '[F]ind current [W]ord' })
+vim.keymap.set('n', '<leader>fg', require('fzf-lua').live_grep_native, { desc = '[F]ind by [G]rep' })
+vim.keymap.set('n', '<leader>fd', require('fzf-lua').diagnostics_workspace, { desc = '[F]ind [D]iagnostics' })
+vim.keymap.set('n', '<leader>fr', require('fzf-lua').resume, { desc = '[F]ind [R]esume' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -1018,12 +953,12 @@ local on_attach = function(_, bufnr)
     vim.lsp.buf.code_action()
   end, '[C]ode [A]ction')
 
-  nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-  nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-  nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-  nmap('<leader>ltd', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-  nmap('<leader>lds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  nmap('<leader>lws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+  nmap('gd', require('fzf-lua').lsp_definitions, '[G]oto [D]efinition')
+  nmap('gr', require('fzf-lua').lsp_references, '[G]oto [R]eferences')
+  nmap('gI', require('fzf-lua').lsp_implementations, '[G]oto [I]mplementation')
+  nmap('<leader>ltd', require('fzf-lua').lsp_typedefs, 'Type [D]efinition')
+  nmap('<leader>lds', require('fzf-lua').lsp_document_symbols, '[D]ocument [S]ymbols')
+  nmap('<leader>lws', require('fzf-lua').lsp_workspace_symbols, '[W]orkspace [S]ymbols')
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
